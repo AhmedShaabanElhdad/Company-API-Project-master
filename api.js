@@ -59,7 +59,7 @@ module.exports = function (express) {
                     console.log(err);
                     res.json({status: -1, msg: err.message})
                 }
-                res.status(200).json({status: 1, article: data});
+                res.status(200).json({status: 1, articles: data});
             });
         });
 
@@ -74,6 +74,8 @@ module.exports = function (express) {
                 res.status(200).json({status: 1, article: data});
             });
         });
+
+
 
     return api;
 };
