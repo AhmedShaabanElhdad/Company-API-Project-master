@@ -4,6 +4,9 @@ var morgan = require('morgan');
 var mongoose = require('mongoose');
 var config = require('./config');
 
+var bodyParser = require('body-parser');
+
+
 var app = express();
 
 var PORT = config.port;
@@ -17,9 +20,8 @@ mongoose.connect(config.database, function (err) {
     }
     console.log('Connected to database');
 });
-
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: "50mb"}));
+app.use(bodyParser.urlencoded({limit: "50mb", extended: true,parameterLimit:50000}));
 
 var api = require('./api')(express);
 app.use('/api', api);

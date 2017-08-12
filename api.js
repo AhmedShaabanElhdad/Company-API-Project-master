@@ -1,12 +1,14 @@
 /**
  * Created by Ahmed Shaban on 11/08/2017.
  */
-
+var fs = require('fs');
 var EndUsers = require('./Models/EndUsers');
 var Article = require('./Models/Articles');
 
 module.exports = function (express) {
     var api = express.Router();
+
+    /********************************************* Users **********************************************/
 
     api.route('/login')
         .post(function (req, res) {
@@ -52,6 +54,13 @@ module.exports = function (express) {
             });
         });
 
+    /********************************************* Comments **********************************************/
+
+
+
+
+    /********************************************* Articles **********************************************/
+
     api.route('/article')
         .get(function (req, res) {
             Article.find({}, function (err, data) {
@@ -74,6 +83,53 @@ module.exports = function (express) {
                 res.status(200).json({status: 1, article: data});
             });
         });
+
+    api.route('/addarticle')
+        .post(function (req, res) {
+
+            var date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+
+            var encodeImg = req.body.EncodeImg;
+
+            var bitmap = new Buffer(encodeImg, 'base64');
+            fs.writeFileSync("uploadedImages/example.jpg", bitmap);
+
+            var article = new Article({
+                SourceCode: 1,
+                SectionID: req.body.SectionID,
+                LanguageID: 1,
+                CountryID: 1,
+                PublishDate: date,
+                GetDate: date,
+                Caption: req.body.Caption,
+                Auther: req.body.Auther,
+                FullText: req.body.FullText,
+                Comments: [],
+                ImageCaption: req.body.ImageCaption,
+                ImageOnlineUrl: " ",
+                ImageofflineURL: " ",
+                onlineURL: " ",
+                Status: 'active',
+                NoOffComments: 0,
+                NooffLikes: 0,
+                NoOffSeen: 0,
+                Extracted: " ",
+                Sentment: " ",
+                Audited: " ",
+                Approved: " ",
+            });
+            article.save(function (err) {
+                if (err) {
+                    console.log(err)
+                    res.status(406).json({status: -1, msg: err.message})
+                    //res.sendStatus(406);
+                    return;
+                }
+                res.status(200).json({status: 1, msg: "Article Added Successfully"});
+            });
+        });
+
+    /********************************************* Comments **********************************************/
 
 
 
