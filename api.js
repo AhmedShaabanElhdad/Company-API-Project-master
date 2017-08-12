@@ -63,5 +63,17 @@ module.exports = function (express) {
             });
         });
 
+
+    api.route('/article/:_id')
+        .get(function (req, res) {
+            Article.findOne({"_id":req.params._id}, function (err, data) {
+                if (err) {
+                    console.log(err);
+                    res.json({status: -1, msg: err.message})
+                }
+                res.status(200).json({status: 1, article: data});
+            });
+        });
+
     return api;
 };
