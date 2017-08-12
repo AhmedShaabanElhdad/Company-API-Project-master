@@ -2,11 +2,6 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var articleSchema = new Schema({
-    ArticleID: {
-        type: Number,
-        unique: true,
-        required: true
-    },
     SourceCode: {
         type: Number,
         required: true
