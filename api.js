@@ -63,12 +63,13 @@ module.exports = function (express) {
 
     api.route('/article')
         .get(function (req, res) {
+            var start = req.query.start
             Article.find({}, function (err, data) {
                 if (err) {
                     console.log(err);
                     res.json({status: -1, msg: err.message})
                 }
-                res.status(200).json({status: 1, articles: data});
+                res.status(200).json({status: 1, articles: data.slice(start,start+10)});
             });
         });
 
@@ -108,7 +109,7 @@ module.exports = function (express) {
                 ImageCaption: req.body.ImageCaption,
                 ImageOnlineUrl: " ",
                 ImageofflineURL: " ",
-                onlineURL: " ",
+                onlineURL: "http://localhost:3000/api/image/example.jpg",
                 Status: 'active',
                 NoOffComments: 0,
                 NooffLikes: 0,
@@ -129,7 +130,18 @@ module.exports = function (express) {
             });
         });
 
+    /********************************************* Images **********************************************/
+
+    api.route('/image/:_img')
+        .get(function (req, res) {
+            var img = fs.readFileSync('./uploadedImages/'+req.params._img);
+            res.writeHead(200, {'Content-Type': 'image/jpg' });
+            res.end(img, 'binary');
+        });
+
     /********************************************* Comments **********************************************/
+
+
 
 
 
