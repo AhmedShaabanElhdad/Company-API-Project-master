@@ -23,7 +23,6 @@ module.exports = function (express) {
             })
         });
 
-
     api.route('/register')
         .post(function (req, res) {
             var enduser = new EndUsers({
@@ -54,9 +53,26 @@ module.exports = function (express) {
             });
         });
 
-    /********************************************* Comments **********************************************/
+    /********************************************* favourite **********************************************/
 
+    api.route('/addfavourite/:userid')
+        .post(function (req, res) {
 
+            var favourite = {
+                ArticleUrl: req.body.ArticleUrl,
+                ArticleId: req.body.ArticleId,
+            };
+
+            Article.findOneAndUpdate({ "_id": req.params.userid },{ "$push": { "Favourite": favourite } },{safe: true, upsert: true},function (err) {
+                if (err) {
+                    console.log(err)
+                    res.status(406).json({status: -1, msg: err.message})
+                    //res.sendStatus(406);
+                    return;
+                }
+                res.status(200).json({status: 1, msg: "Comment created Successfully"});
+            });
+        });
 
 
     /********************************************* Articles **********************************************/
@@ -72,7 +88,6 @@ module.exports = function (express) {
                 res.status(200).json({status: 1, articles: data.slice(start,start+10)});
             });
         });
-
 
     api.route('/article/:_id')
         .get(function (req, res) {
@@ -140,6 +155,25 @@ module.exports = function (express) {
         });
 
     /********************************************* Comments **********************************************/
+
+    api.route('/addcomment/:articleid')
+        .post(function (req, res) {
+            var comment = {
+                comment: req.body.comment,
+                username: req.body.username,
+                date: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+            };
+
+            Article.findOneAndUpdate({ "_id": req.params.articleid },{ "$push": { "Comments": comment } },{safe: true, upsert: true},function (err) {
+                if (err) {
+                    console.log(err)
+                    res.status(406).json({status: -1, msg: err.message})
+                    //res.sendStatus(406);
+                    return;
+                }
+                res.status(200).json({status: 1, msg: "Comment created Successfully"});
+            });
+        });
 
 
 
