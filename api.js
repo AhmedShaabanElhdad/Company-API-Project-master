@@ -156,6 +156,14 @@ module.exports = function (express) {
 
     /********************************************* Comments **********************************************/
 
+    /*db.articles.update({_id:ObjectId("5986e80cd5c78a9809eaee00")},{
+     $push: {"Comments":{
+     "username":"Mohamed",
+     "comment":"this is agood article",
+     "date":"21-03-03"
+     }}
+     })*/
+
     api.route('/addcomment/:articleid')
         .post(function (req, res) {
             var comment = {
@@ -174,10 +182,6 @@ module.exports = function (express) {
                 res.status(200).json({status: 1, msg: "Comment created Successfully"});
             });
         });
-
-
-
-
 
     return api;
 };
