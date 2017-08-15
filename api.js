@@ -203,16 +203,15 @@ module.exports = function (express) {
             });
         });
 
-    return api;
-
     /********************************************* Likes **********************************************/
 
     api.route('/addlike/:articleid')
         .post(function (req, res) {
 
-            var user_id = req.body.ArticleUrl;
+            var user_id = req.body.userid;
+            console.log(user_id)
 
-            Articles.findOneAndUpdate({"_id": req.params.userid}, {"$push": {"Likes": user_id}}, {
+            Articles.findOneAndUpdate({"_id": req.params.articleid}, {"$push": {"Likes": user_id}}, {
                 safe: true,
                 upsert: true
             }, function (err) {
@@ -230,20 +229,30 @@ module.exports = function (express) {
     api.route('/getlike/:articleid')
         .post(function (req, res) {
 
-            var user_id = req.body.ArticleUrl;
+            var user_id = req.body.userid;
 
-            Articles.find({"_id": req.params.userid,Likes:{"$in": {"Likes": [user_id]}}}, {
+            Articles.find({"_id": req.params.articleid,Likes:user_id}, {
                 safe: true,
                 upsert: true
-            }, function (err) {
+            }, function (err,data) {
                 if (err) {
                     console.log(err)
                     res.status(406).json({status: -1, msg: err.message})
                     //res.sendStatus(406);
                     return;
                 }
-                res.status(200).json({status: 1, msg: "Comment created Successfully"});
+                res.status(200).json({status: 1, data:data});
             });
         });
 
+
+
+
+
+
+
+
+
+
+    return api;
 };
