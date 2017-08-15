@@ -3,7 +3,7 @@
  */
 var fs = require('fs');
 var EndUsers = require('./Models/EndUsers');
-var Article = require('./Models/Articles');
+var Articles = require('./Models/Articles');
 
 module.exports = function (express) {
     var api = express.Router();
@@ -18,8 +18,11 @@ module.exports = function (express) {
                     res.status(406).json({status: -1, msg: err.message})
                     return;
                 }
-                console.log(user, req.body.UserPass, req.body.Email)
-                res.status(200).json({status: 1, user: user});
+                console.log(user, req.body.UserPass, req.body.Email);
+                if (user.length == 0)
+                    res.json({status: -1, msg: "username or password is wrong"})
+                else
+                    res.status(200).json({status: 1, user: user});
             })
         });
 
@@ -53,9 +56,9 @@ module.exports = function (express) {
             });
         });
 
-    /********************************************* favourite **********************************************/
+    /********************************************* Likes **********************************************/
 
-    api.route('/addfavourite/:userid')
+    api.route('/addlike/:userid')
         .post(function (req, res) {
 
             var favourite = {
@@ -63,7 +66,10 @@ module.exports = function (express) {
                 ArticleId: req.body.ArticleId,
             };
 
-            Article.findOneAndUpdate({ "_id": req.params.userid },{ "$push": { "Favourite": favourite } },{safe: true, upsert: true},function (err) {
+            Articles.findOneAndUpdate({"_id": req.params.userid}, {"$push": {"Favourite": favourite}}, {
+                safe: true,
+                upsert: true
+            }, function (err) {
                 if (err) {
                     console.log(err)
                     res.status(406).json({status: -1, msg: err.message})
@@ -73,25 +79,55 @@ module.exports = function (express) {
                 res.status(200).json({status: 1, msg: "Comment created Successfully"});
             });
         });
+    /********************************************* AddFavourite **********************************************/
+
+    api.route('/addfavourite/:userid')
+        .post(function (req, res) {
+
+            var FavouriteCategory = [];
+            for (var i = 0; i < req.body.length; i++) {
+
+                FavouriteCategory.push({SectionId: req.body["fav" + i]});
+            }
+
+            console.log("FavouriteCategory", FavouriteCategory)
+
+            EndUsers.FavouriteCategory = [];
+
+
+            EndUsers.findOneAndUpdate({"_id": req.params.userid}, {"$set": {"FavouriteCategory.0": FavouriteCategory}}, {
+                safe: true,
+                upsert: true
+            }, function (err) {
+                if (err) {
+                    console.log(err)
+                    res.status(406).json({status: -1, msg: err.message})
+                    //res.sendStatus(406);
+                    return;
+                }
+                res.status(200).json({status: 1, msg: "Favourites updated Successfully"});
+            });
+        });
 
 
     /********************************************* Articles **********************************************/
 
     api.route('/article')
         .get(function (req, res) {
-            var start = req.query.start
-            Article.find({}, function (err, data) {
+            Articles.find({}, function (err, data) {
                 if (err) {
                     console.log(err);
                     res.json({status: -1, msg: err.message})
                 }
-                res.status(200).json({status: 1, articles: data.slice(start,start+10)});
+                //var start =req.query.start
+                //res.status(200).json({status: 1, articles: data.slice(start,start+10)});
+                res.status(200).json({status: 1, articles: data});
             });
         });
 
     api.route('/article/:_id')
         .get(function (req, res) {
-            Article.findOne({"_id":req.params._id}, function (err, data) {
+            Articles.findOne({"_id": req.params._id}, function (err, data) {
                 if (err) {
                     console.log(err);
                     res.json({status: -1, msg: err.message})
@@ -110,7 +146,7 @@ module.exports = function (express) {
             var bitmap = new Buffer(encodeImg, 'base64');
             fs.writeFileSync("uploadedImages/example.jpg", bitmap);
 
-            var article = new Article({
+            var article = new Articles({
                 SourceCode: 1,
                 SectionID: req.body.SectionID,
                 LanguageID: 1,
@@ -149,30 +185,25 @@ module.exports = function (express) {
 
     api.route('/image/:_img')
         .get(function (req, res) {
-            var img = fs.readFileSync('./uploadedImages/'+req.params._img);
-            res.writeHead(200, {'Content-Type': 'image/jpg' });
+            var img = fs.readFileSync('./uploadedImages/' + req.params._img);
+            res.writeHead(200, {'Content-Type': 'image/jpg'});
             res.end(img, 'binary');
         });
 
     /********************************************* Comments **********************************************/
-
-    /*db.articles.update({_id:ObjectId("5986e80cd5c78a9809eaee00")},{
-     $push: {"Comments":{
-     "username":"Mohamed",
-     "comment":"this is agood article",
-     "date":"21-03-03"
-     }}
-     })*/
-
     api.route('/addcomment/:articleid')
         .post(function (req, res) {
             var comment = {
                 comment: req.body.comment,
                 username: req.body.username,
+                user_id: req.body.user_id,
                 date: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
             };
 
-            Article.findOneAndUpdate({ "_id": req.params.articleid },{ "$push": { "Comments": comment } },{safe: true, upsert: true},function (err) {
+            Articles.findOneAndUpdate({"_id": req.params.articleid}, {"$push": {"Comments": comment}}, {
+                safe: true,
+                upsert: true
+            }, function (err) {
                 if (err) {
                     console.log(err)
                     res.status(406).json({status: -1, msg: err.message})
