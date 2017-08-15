@@ -56,30 +56,6 @@ module.exports = function (express) {
             });
         });
 
-    /********************************************* Likes **********************************************/
-
-    api.route('/addlike/:userid')
-        .post(function (req, res) {
-
-            var favourite = {
-                ArticleUrl: req.body.ArticleUrl,
-                ArticleId: req.body.ArticleId,
-            };
-
-            Articles.findOneAndUpdate({"_id": req.params.userid}, {"$push": {"Favourite": favourite}}, {
-                safe: true,
-                upsert: true
-            }, function (err) {
-                if (err) {
-                    console.log(err)
-                    res.status(406).json({status: -1, msg: err.message})
-                    //res.sendStatus(406);
-                    return;
-                }
-                res.status(200).json({status: 1, msg: "Comment created Successfully"});
-            });
-        });
-
     /********************************************* AddFavourite **********************************************/
 
     api.route('/addfavourite/:userid')
@@ -183,12 +159,14 @@ module.exports = function (express) {
 
     api.route('/categoryarticle/:SectionID')
         .get(function (req, res) {
-            Articles.findOne({"SectionID": req.params.SectionID}, function (err, data) {
+            Articles.find({"SectionID": req.params.SectionID}, function (err, data) {
                 if (err) {
                     console.log(err);
                     res.json({status: -1, msg: err.message})
                 }
-                res.status(200).json({status: 1, article: data});
+                //var start =req.query.start
+                //res.status(200).json({status: 1, articles: data.slice(start,start+10)});
+                res.status(200).json({status: 1, articles: data});
             });
         });
 
@@ -226,4 +204,46 @@ module.exports = function (express) {
         });
 
     return api;
+
+    /********************************************* Likes **********************************************/
+
+    api.route('/addlike/:articleid')
+        .post(function (req, res) {
+
+            var user_id = req.body.ArticleUrl;
+
+            Articles.findOneAndUpdate({"_id": req.params.userid}, {"$push": {"Likes": user_id}}, {
+                safe: true,
+                upsert: true
+            }, function (err) {
+                if (err) {
+                    console.log(err)
+                    res.status(406).json({status: -1, msg: err.message})
+                    //res.sendStatus(406);
+                    return;
+                }
+                res.status(200).json({status: 1, msg: "Comment created Successfully"});
+            });
+        });
+
+
+    api.route('/getlike/:articleid')
+        .post(function (req, res) {
+
+            var user_id = req.body.ArticleUrl;
+
+            Articles.find({"_id": req.params.userid,Likes:{"$in": {"Likes": [user_id]}}}, {
+                safe: true,
+                upsert: true
+            }, function (err) {
+                if (err) {
+                    console.log(err)
+                    res.status(406).json({status: -1, msg: err.message})
+                    //res.sendStatus(406);
+                    return;
+                }
+                res.status(200).json({status: 1, msg: "Comment created Successfully"});
+            });
+        });
+
 };

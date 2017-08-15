@@ -45,6 +45,7 @@ var articleSchema = new Schema({
             username: String
         }
     ],
+    Likes: [String],
     ImageCaption: {
         type: String,
         required: true
