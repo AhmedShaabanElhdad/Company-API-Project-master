@@ -79,6 +79,7 @@ module.exports = function (express) {
                 res.status(200).json({status: 1, msg: "Comment created Successfully"});
             });
         });
+
     /********************************************* AddFavourite **********************************************/
 
     api.route('/addfavourite/:userid')
@@ -108,7 +109,6 @@ module.exports = function (express) {
                 res.status(200).json({status: 1, msg: "Favourites updated Successfully"});
             });
         });
-
 
     /********************************************* Articles **********************************************/
 
@@ -178,6 +178,17 @@ module.exports = function (express) {
                     return;
                 }
                 res.status(200).json({status: 1, msg: "Article Added Successfully"});
+            });
+        });
+
+    api.route('/categoryarticle/:SectionID')
+        .get(function (req, res) {
+            Articles.findOne({"SectionID": req.params.SectionID}, function (err, data) {
+                if (err) {
+                    console.log(err);
+                    res.json({status: -1, msg: err.message})
+                }
+                res.status(200).json({status: 1, article: data});
             });
         });
 
