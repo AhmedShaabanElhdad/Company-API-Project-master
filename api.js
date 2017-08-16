@@ -86,6 +86,34 @@ module.exports = function (express) {
             });
         });
 
+    api.route('/addfavourite/:userid')
+        .post(function (req, res) {
+
+            var FavouriteCategory = [];
+            for (var i = 0; i < req.body.length; i++) {
+
+                FavouriteCategory.push({SectionId: req.body["fav" + i]});
+            }
+
+            console.log("FavouriteCategory", FavouriteCategory)
+
+            EndUsers.FavouriteCategory = [];
+
+
+            EndUsers.findOneAndUpdate({"_id": req.params.userid}, {"$set": {"FavouriteCategory.0": FavouriteCategory}}, {
+                safe: true,
+                upsert: true
+            }, function (err) {
+                if (err) {
+                    console.log(err)
+                    res.status(406).json({status: -1, msg: err.message})
+                    //res.sendStatus(406);
+                    return;
+                }
+                res.status(200).json({status: 1, msg: "Favourites updated Successfully"});
+            });
+        });
+
     /********************************************* Articles **********************************************/
 
     api.route('/article')
@@ -108,7 +136,13 @@ module.exports = function (express) {
                     console.log(err);
                     res.json({status: -1, msg: err.message})
                 }
-                res.status(200).json({status: 1, article: data});
+                var exist=-1;
+                if(data.Likes) {
+                    if (data.Likes.indexOf("598ec995054dfad044f90960") != -1)
+                        exist = 1;
+                }
+
+                res.status(200).json({status: 1, article: data , exist:exist});
             });
         });
 
