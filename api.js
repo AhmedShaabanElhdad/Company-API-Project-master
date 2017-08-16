@@ -71,8 +71,7 @@ module.exports = function (express) {
 
             EndUsers.FavouriteCategory = [];
 
-
-            EndUsers.findOneAndUpdate({"_id": req.params.userid}, {"$set": {"FavouriteCategory.0": FavouriteCategory}}, {
+            EndUsers.findOneAndUpdate({"_id": req.params.userid}, {"$set": {"FavouriteCategory": FavouriteCategory}}, {
                 safe: true,
                 upsert: true
             }, function (err) {
@@ -86,31 +85,16 @@ module.exports = function (express) {
             });
         });
 
-    api.route('/addfavourite/:userid')
-        .post(function (req, res) {
-
-            var FavouriteCategory = [];
-            for (var i = 0; i < req.body.length; i++) {
-
-                FavouriteCategory.push({SectionId: req.body["fav" + i]});
-            }
-
-            console.log("FavouriteCategory", FavouriteCategory)
-
-            EndUsers.FavouriteCategory = [];
-
-
-            EndUsers.findOneAndUpdate({"_id": req.params.userid}, {"$set": {"FavouriteCategory.0": FavouriteCategory}}, {
-                safe: true,
-                upsert: true
-            }, function (err) {
+    api.route('/getfavourite/:userid')
+        .get(function (req, res) {
+            EndUsers.find({"_id": req.params.userid}, {"FavouriteCategory":1}, function (err,data) {
                 if (err) {
-                    console.log(err)
-                    res.status(406).json({status: -1, msg: err.message})
+                    console.log(err);
+                    res.status(406).json({status: -1, msg: err.message});
                     //res.sendStatus(406);
                     return;
                 }
-                res.status(200).json({status: 1, msg: "Favourites updated Successfully"});
+                res.status(200).json({status: 1, FavouriteCategory: data});
             });
         });
 
@@ -191,6 +175,9 @@ module.exports = function (express) {
             });
         });
 
+
+    /********************************************* Searching **********************************************/
+
     api.route('/categoryarticle/:SectionID')
         .get(function (req, res) {
             Articles.find({"SectionID": req.params.SectionID}, function (err, data) {
@@ -200,6 +187,38 @@ module.exports = function (express) {
                 }
                 //var start =req.query.start
                 //res.status(200).json({status: 1, articles: data.slice(start,start+10)});
+                res.status(200).json({status: 1, articles: data});
+            });
+        });
+
+    api.route('/articlebycountry/:SectionID')
+        .get(function (req, res) {
+            Articles.find({"SectionID": req.params.SectionID}, function (err, data) {
+                if (err) {
+                    console.log(err);
+                    res.json({status: -1, msg: err.message})
+                }
+                //var start =req.query.start
+                //res.status(200).json({status: 1, articles: data.slice(start,start+10)});
+                res.status(200).json({status: 1, articles: data});
+            });
+        });
+
+    api.route('/articlebyfav')
+        .get(function (req, res) {
+            var CountryArray=[];
+            for(var parameter in req.query)
+            {
+                console.log(req.query[parameter])
+                CountryArray.push({CountryID:req.query[parameter]});
+            }
+            //{$or:[{"groupA":data},{"groupB":data}]}
+            Articles.find({"$or": CountryArray}, function (err, data) {
+                if (err) {
+                    console.log(err);
+                    res.json({status: -1, msg: err.message})
+                    return;
+                }
                 res.status(200).json({status: 1, articles: data});
             });
         });
